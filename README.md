@@ -94,4 +94,4 @@ You can run the project using either Visual Studio or Command Prompt (CMD). Foll
    dotnet run
    ```
 
-   The application will start, and you can access it in your web browser at `http://localhost:5000` or the URL specified in the output.
+   The application will start, and you can access it in your web browser.
