@@ -16,7 +16,7 @@ namespace HadiShop.Services
             _cache = cache;
         }
 
-        public async Task<Product> GetProductByIdAsync(int id)
+        public async Task<Product?> GetProductByIdAsync(int id)
         {
             return await _context.Products
                 .Include(p => p.ProductCategories)
@@ -26,19 +26,31 @@ namespace HadiShop.Services
 
         public async Task<IEnumerable<Product>> GetProductsAsync(string searchQuery, int selectedCategoryId)
         {
-            var productsQuery = _context.Products.Include(p => p.ProductCategories).AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(searchQuery))
+            var cacheKey = "all_products";
+            if (!_cache.TryGetValue(cacheKey, out IQueryable<Product>? cachedProducts))
             {
-                productsQuery = productsQuery.Where(p => p.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
+                var products = await _context.Products.Include(p => p.ProductCategories).ToArrayAsync();
+                cachedProducts = products.AsQueryable();
+
+                var cacheEntryOptions = new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10),
+                    Priority = CacheItemPriority.Normal
+                };
+
+                _cache.Set(cacheKey, cachedProducts, cacheEntryOptions);
+            }
+            if (!string.IsNullOrWhiteSpace(searchQuery) && cachedProducts != null)
+            {
+                cachedProducts = cachedProducts.Where(p => p.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (selectedCategoryId > 0)
+            if (selectedCategoryId > 0 && cachedProducts != null)
             {
-                productsQuery = productsQuery.Where(p => p.ProductCategories.Any(pc => pc.CategoryId == selectedCategoryId));
+                cachedProducts = cachedProducts.Where(p => p.ProductCategories.Any(pc => pc.CategoryId == selectedCategoryId));
             }
 
-            return await productsQuery.ToListAsync();
+            return cachedProducts ?? Enumerable.Empty<Product>();
         }
 
         public async Task<IEnumerable<Category>> GetCategoriesAsync()
