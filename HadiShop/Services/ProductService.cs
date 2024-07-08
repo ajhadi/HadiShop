@@ -16,6 +16,14 @@ namespace HadiShop.Services
             _cache = cache;
         }
 
+        public async Task<Product> GetProductByIdAsync(int id)
+        {
+            return await _context.Products
+                .Include(p => p.ProductCategories)
+                .ThenInclude(pc => pc.Category)
+                .FirstOrDefaultAsync(p => p.ProductId == id);
+        }
+
         public async Task<IEnumerable<Product>> GetProductsAsync(string searchQuery, int selectedCategoryId)
         {
             var productsQuery = _context.Products.Include(p => p.ProductCategories).AsQueryable();

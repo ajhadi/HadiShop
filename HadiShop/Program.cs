@@ -18,7 +18,10 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
 
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddMemoryCache();
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.AddPageRoute("/Detail", "/detail/{id}");
+});
 builder.Services.AddLogging();
 
 var app = builder.Build();

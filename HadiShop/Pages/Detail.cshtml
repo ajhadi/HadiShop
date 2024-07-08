@@ -1,0 +1,27 @@
+﻿@page
+@model HadiShop.Pages.DetailModel
+@{
+    ViewData["Title"] = "Product Detail";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <img src="@Model.ViewModel.Product.ImageUrl" class="img-fluid" alt="@Model.ViewModel.Product.Name" />
+        </div>
+        <div class="col-md-8">
+            <h2>@Model.ViewModel.Product.Name</h2>
+            <p>@Model.ViewModel.Product.Description</p>
+            <p>Price: Rp @Model.ViewModel.Product.Price.ToString("N2", new System.Globalization.CultureInfo("id-ID"))</p>
+            <p>Stock: @Model.ViewModel.Product.Stock</p>
+            <p>
+                Category(s):
+                @foreach (var category in Model.ViewModel.Product.ProductCategories.Select(pc => pc.Category))
+                {
+                    @category.Name
+                }
+            </p>
+            <a href="#" class="btn btn-primary w-100">Add to Cart</a>
+        </div>
+    </div>
+</div>
